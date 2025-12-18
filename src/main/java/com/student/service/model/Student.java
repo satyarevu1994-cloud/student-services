@@ -1,0 +1,19 @@
+package com.student.service.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Data
+@Document(collation = "student")
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Student {
+
+    @Id
+    private String id;
+    private String studentName;
+    private String studentClass;
+    private Long poneNo;
+}
+
