@@ -3,17 +3,7 @@
 student-service is a Spring Boot microservice that manages student-related data and operations.
 It is built using Java, Spring Boot, and Maven, and is designed to run as a containerized service in cloud environments.
 
-🚀 Features
-
-CRUD operations for Student entities
-
-RESTful APIs
-
-Spring Boot & Spring MVC
-
-Maven-based build
-
-Health check endpoint
+🚀 Featurest
 
 Dockerized application
 
