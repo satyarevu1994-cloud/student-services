@@ -1,0 +1,67 @@
+trigger:
+  branches:
+    include:
+      - main
+pr:
+  branches:
+    include:
+      - main
+pool:
+  vmImage: 'ubuntu-latest'
+stages:
+  - stage: Build
+    displayName: "Build Application"
+    jobs:
+      - job: BuildJob
+        steps:
+          - task: Maven@3
+            displayName: "Maven Build"
+            inputs:
+              mavenPomFile: 'pom.xml'
+              goals: 'clean compile -DskipTests'
+  - stage: Unit_Tests
+    displayName: "Execute Unit Tests"
+    dependsOn:
+      - Build
+    jobs:
+      - job: UnitTestJob
+        steps:
+          - task: Maven@3
+            displayName: "Run Unit Tests"
+            inputs:
+              mavenPomFile: 'pom.xml'
+              goals: 'test'
+              publishJUnitResults: true
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+  - stage: Component_Tests
+    displayName: "Execute Component Tests"
+    dependsOn:
+      - Unit_Tests
+    jobs:
+      - job: ComponentTestJob
+        steps:
+          - task: CmdLine@2
+            displayName: "Start component tests"
+            inputs:
+              script: echo "Running component/integration tests..."
+          - task: Maven@3
+            displayName: "Run Component/Integration Tests"
+            inputs:
+              mavenPomFile: 'pom.xml'
+              goals: 'verify'
+              publishJUnitResults: true
+              testResultsFiles: '**/failsafe-reports/*.xml'
+  - stage: SonarQube_Analysis
+    displayName: "Static Code Analysis - SonarQube"
+    dependsOn:
+      - Component_Tests
+    jobs:
+      - job: SonarJob
+        steps:
+          - task: Maven@3
+            displayName: "Run SonarQube Scan"
+            inputs:
+              mavenPomFile: 'pom.xml'
+              goals: 'verify sonar:sonar'
+              options: >
+                -Dsonar.projectKey=student-service -Dsonar.projectName=student-service -Dsonar.projectVersion=1.0 -Dsonar.host.url=$(SONAR_HOST) -Dsonar.login=$(SONAR_TOKEN) -Dsonar.sources=src/main/java -Dsonar.tests=src/test/java -Dsonar.java.binaries=$(Build.SourcesDirectory)/target/classes -Dsonar.java.coveragePlugin=jacoco -Dsonar.coverage.jacoco.xmlReportPaths=$(Build.SourcesDirectory)/**/jacoco.xml
